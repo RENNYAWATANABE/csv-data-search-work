@@ -1,4 +1,4 @@
 # csv-data-search
-CSVデータ検索アプリ
+CSVデータ検索アプリ[work]
 
 https://rennyawatanabe.github.io/csv-data-search/csvデータ検索[br機能追加].html

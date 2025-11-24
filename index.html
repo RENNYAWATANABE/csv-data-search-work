@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSVデータ検索[work]</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            vertical-align: top;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        /* セル内の区切り線 */
+        .separator {
+            border-top: 1px solid #ccc;
+            /* 薄い水平線 */
+            margin: 5px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <h4>csv data search</h4>
+    <input type="text" id="searchInput" placeholder="検索キーワードを入力">
+    <button onclick="searchData()">Search</button>
+    <table id="dataTable">
+        <thead>
+            <tr>
+                <th>word</th>
+                <th>meaning</th>
+                <th>Tag1</th>
+                <th>Tag2</th>
+                <th>Tag3</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <script>
+        let headers = [];
+        let rows = [];
+
+
+
+        // CSVファイルを読み込む
+        fetch('data1.csv')
+            .then(response => response.text())
+            .then(text => {
+                // CR を除去して行分割（Windows の CRLF 対策）
+                const parsed = text.replace(/\r/g, '').split('\n').map(row => row.split(','));
+                headers = parsed[0] || [];
+                rows = parsed.slice(1).filter(r => r.length > 0 && !(r.length === 1 && r[0] === '')); // 空行除外
+                displayData(rows);
+            });
+
+        // データを表示する関数（受け取るのは本文行のみ）
+        function displayData(dataRows) {
+            const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = '';
+
+            dataRows.forEach(row => {
+                const newRow = tableBody.insertRow();
+                row.forEach(cell => {
+                    const newCell = newRow.insertCell();
+
+                    // 区切り文字をHTMLタグに置換
+                    let displayContent = (cell || '');
+
+                    // 区切り文字「|---|」を視覚的な区切り線に置換
+                    displayContent = displayContent.replace(/\|---\|/g, '<div class="separator"></div>');
+
+                    // <br> はそのまま（必要なら sanitize を追加）
+                    newCell.innerHTML = displayContent;
+                });
+            });
+        }
+
+        // 検索機能（本文 rows を検索）
+        function searchData() {
+            const keyword = document.getElementById('searchInput').value.toLowerCase();
+
+            const filteredRows = rows.filter(row =>
+                row.some(cell => {
+                    const cleanCell = (cell || '').toLowerCase()
+                        .replace(/<br>/g, '')      // <br>を削除
+                        .replace(/\|---\|/g, '')   // 区切り文字を削除
+                        .trim();
+                    return cleanCell.includes(keyword);
+                })
+            );
+
+            displayData(filteredRows);
+        }
+    </script>
+</body>
+
+</html>
